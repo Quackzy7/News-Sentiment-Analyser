@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from dotenv import load_dotenv
-import os
+from app.api.routes import router
 
 load_dotenv()
 
@@ -9,6 +9,8 @@ app=FastAPI(
     description="Detects bias and propaganda in news articles",
     version="1.0.0"
 )
+
+app.include_router(router,prefix="/api/v1")
 
 @app.get("/")
 def root():
