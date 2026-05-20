@@ -1,6 +1,7 @@
 from fastapi import APIRouter ,HTTPException
 from pydantic import BaseModel, HttpUrl
 from app.services.scraper import scrape_article, STATIC_SITES
+from app.services.analyzer import analyze_article
 
 router = APIRouter()
 
@@ -41,4 +42,37 @@ async def scrape(request:ArticleRequest):
         raise HTTPException(
         status_code=500, 
         detail=f"Something went wrong: {type(e).__name__}: {str(e)}"
+        )
+    
+@router.post("/analyze")
+async def analyze(request: ArticleRequest):
+    if request.source not in SUPPORTED_SOURCES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid source. Choose from: {', '.join(SUPPORTED_SOURCES)}"
+        )
+
+    if request.source not in str(request.url):
+        raise HTTPException(
+            status_code=400,
+            detail=f"URL does not match selected source '{request.source}'"
+        )
+
+    try:
+        scraped = await scrape_article(str(request.url))
+        analysis = await analyze_article(scraped["text"])
+
+        return {
+            "url": scraped["url"],
+            "title": scraped["title"],
+            "source": scraped["source"],
+            "word_count": scraped["word_count"],
+            "analysis": analysis
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Something went wrong: {type(e).__name__}: {str(e)}"
         )

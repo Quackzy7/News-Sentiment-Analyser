@@ -4,7 +4,7 @@ import re
 
 STATIC_SITES = {
     "onlinekhabar.com": ".ok18-single-post-content-wrap",
-    
+    "ratopati.com": ".the-content"
 }
 
 DYNAMIC_SITES = {
