@@ -1,7 +1,8 @@
-from fastapi import APIRouter ,HTTPException
+from fastapi import APIRouter ,HTTPException,Depends
 from pydantic import BaseModel, HttpUrl
 from app.services.scraper import scrape_article, STATIC_SITES
 from app.services.analyzer import analyze_article
+from app.api.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -45,7 +46,7 @@ async def scrape(request:ArticleRequest):
         )
     
 @router.post("/analyze")
-async def analyze(request: ArticleRequest):
+async def analyze(request: ArticleRequest,current_user:dict=Depends(get_current_user)):
     if request.source not in SUPPORTED_SOURCES:
         raise HTTPException(
             status_code=400,
@@ -67,6 +68,7 @@ async def analyze(request: ArticleRequest):
             "title": scraped["title"],
             "source": scraped["source"],
             "word_count": scraped["word_count"],
+            "analyzed_by": current_user["email"],
             "analysis": analysis
         }
     except ValueError as e:
