@@ -4,6 +4,7 @@ import SourceSelector from './components/SourceSelector'
 import ResultCard from './components/ResultCard'
 import LoadingSpinner from './components/LoadingSpinner'
 import Login from './components/Login'
+import History from './components/History'
 import { saveToken, getToken, removeToken, isAuthenticated } from './auth'
 import './App.css'
 
@@ -16,7 +17,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [user, setUser] = useState(null)
-
+  const [showHistory, setShowHistory] = useState(false)
   useEffect(() => {
 
     const params = new URLSearchParams(window.location.search)
@@ -70,18 +71,18 @@ function App() {
       setResult(response.data)
     } catch (err) {
       if (err.response?.status === 401) {
-      removeToken()
-      setUser(null)
-    } else {
-      setError(err.response?.data?.detail || 'Something went wrong')
-    }
-      
+        removeToken()
+        setUser(null)
+      } else {
+        setError(err.response?.data?.detail || 'Something went wrong')
+      }
+
     } finally {
       setLoading(false)
     }
   }
   if (!user) return <Login />
-   return (
+  return (
     <div className="app">
       <header className="header">
         <div className="header-top">
@@ -95,6 +96,9 @@ function App() {
             )}
             <span className="user-name">{user.name}</span>
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
+            <button className="history-btn" onClick={() => setShowHistory(true)}>
+              History
+            </button>
           </div>
         </div>
       </header>
@@ -125,6 +129,7 @@ function App() {
         {loading && <LoadingSpinner />}
         {result && <ResultCard result={result} />}
       </main>
+      {showHistory && <History onClose={() => setShowHistory(false)} />}
     </div>
   )
 }
